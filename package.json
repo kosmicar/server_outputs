@@ -1,11 +1,11 @@
 {
-  "name": "remote‑agent‑server",
+  "name": "server_outputs",
   "version": "1.0.0",
   "main": "index.js",
-  "dependencies": {
-    "express": "^4.18.2"
-  },
   "scripts": {
     "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
   }
 }
