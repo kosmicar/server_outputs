@@ -2,21 +2,46 @@ const express = require("express");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// Where uploaded images will be saved
-const upload = multer({ dest: "uploads/" });
+// Set up multer to temporarily store files in /tmp
+const upload = multer({ dest: "/tmp" });
 
-app.post("/upload", upload.single("file"), (req, res) => {
-  console.log("Received file:", req.file.originalname);
-  // Move/rename file if needed
-  const targetPath = path.join(__dirname, "uploads", req.file.originalname);
-  fs.rename(req.file.path, targetPath, (err) => {
-    if (err) return res.status(500).send("Error saving file");
-    res.send({ status: "ok", file: req.file.originalname });
-  });
+const GITHUB_TOKEN = "YOUR_PERSONAL_ACCESS_TOKEN"; // from step 2
+const REPO = "kosmicar/server_outputs"; // your repo
+const BRANCH = "main"; // branch to commit to
+
+// Upload endpoint
+app.post("/upload", upload.single("file"), async (req, res) => {
+  try {
+    const localPath = req.file.path;
+    const fileName = req.file.originalname;
+    const fileContent = fs.readFileSync(localPath, { encoding: "base64" });
+
+    const githubPath = `uploads/${fileName}`; // path inside repo
+
+    await axios.put(`https://api.github.com/repos/${REPO}/contents/${githubPath}`, {
+      message: `Upload ${fileName} from agent`,
+      content: fileContent,
+      branch: BRANCH
+    }, {
+      headers: {
+        Authorization: `token ${GITHUB_TOKEN}`,
+        "User-Agent": "Node.js"
+      }
+    });
+
+    // Remove temp file
+    fs.unlinkSync(localPath);
+
+    res.json({ status: "ok", file: fileName });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: err.message });
+  }
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
