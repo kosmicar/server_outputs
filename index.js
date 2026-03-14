@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 10000;
 // Set up multer to temporarily store files in /tmp
 const upload = multer({ dest: "/tmp" });
 
-const GITHUB_TOKEN = "YOUR_PERSONAL_ACCESS_TOKEN"; // from step 2
+const GITHUB_TOKEN = "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"; // from step 2
 const REPO = "kosmicar/server_outputs"; // your repo
 const BRANCH = "main"; // branch to commit to
 
